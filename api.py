@@ -1,25 +1,38 @@
-import flask
+import os
 import time
 import hmac
-from requests import Request
+import flask
+from flask import jsonify
+from dotenv import load_dotenv
+from requests import Request, Session
 
+load_dotenv()
 
-app = flask.Flask(__name__)
-app.config["DEBUG"] = True
+# app = flask.Flask(__name__)
+# app.config["DEBUG"] = True
 
+api_key = os.getenv('API_KEY')
+api_secret = os.getenv('API_SECRET')
 
-ts = int(time.time() * 1000)
-request = Request('GET', '<api_endpoint>')
-prepared = request.prepare()
-signature_payload = f'{ts}{prepared.method}{prepared.path_url}'.encode()
-signature = hmac.new('YOUR_API_SECRET'.encode(), signature_payload, 'sha256').hexdigest()
+def api_request():
+  s = Session()
+  ts = int(time.time() * 1000)
+  request = Request('GET', 'https://ftx.com/api')
+  prepared = request.prepare()
+  signature_payload = f'{ts}{prepared.method}{prepared.path_url}'.encode()
+  signature = hmac.new(api_secret.encode(), signature_payload, 'sha256').hexdigest()
 
-prepared.headers['FTX-KEY'] = 'YOUR_API_KEY'
-prepared.headers['FTX-SIGN'] = signature
-prepared.headers['FTX-TS'] = str(ts)
+  prepared.headers['FTX-KEY'] = api_key
+  prepared.headers['FTX-SIGN'] = signature
+  prepared.headers['FTX-TS'] = str(ts)
 
-@app.route('/', methods=['GET'])
-def home():
-    return "<h1>Distant Reading Archive</h1><p>This site is a prototype API for distant reading of science fiction novels.</p>"
+  resp = s.send(prepared)
+  return resp.json()
 
-app.run()
+print(api_request())
+
+# @app.route('/', methods=['GET'])
+# def home():
+#     return jsonify(apikey=api_key)
+
+# app.run()
