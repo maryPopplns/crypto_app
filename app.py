@@ -12,5 +12,3 @@ app.config["DEBUG"] = True
 def headline():
     response = headline_request()
     return jsonify(response)
-
-app.run()
