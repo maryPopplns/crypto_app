@@ -21,12 +21,12 @@ def headlines_controller():
   resp = s.send(prepared)
   return resp.json()
 
-def topcoins_controller():
+def coins_controller(coin):
   # env variables
   host = os.getenv('MINEABLE_HOST')
   key = os.getenv('MINEABLE_KEY')
 
-  url = 'https://mineable-coins.p.rapidapi.com/coins'
+  url = f'https://mineable-coins.p.rapidapi.com/coins{coin}'
   s = Session()
   request = Request('GET', url)
   prepared = request.prepare()
