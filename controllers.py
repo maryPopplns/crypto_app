@@ -23,10 +23,10 @@ def headlines_controller():
 
 def topcoins_controller():
   # env variables
-  host = os.getenv('LORE_HOST')
-  key = os.getenv('LORE_KEY')
+  host = os.getenv('MINEABLE_HOST')
+  key = os.getenv('MINEABLE_KEY')
 
-  url = 'https://coinlore-cryptocurrency.p.rapidapi.com/api/tickers/'
+  url = 'https://mineable-coins.p.rapidapi.com/coins'
   s = Session()
   request = Request('GET', url)
   prepared = request.prepare()
@@ -37,3 +37,4 @@ def topcoins_controller():
 
   resp = s.send(prepared)
   return resp.json()
+
