@@ -34,7 +34,7 @@ class User(db.Model):
     id = db.Column(db.String(), primary_key=True, default=uuid.uuid1)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
-    coins = db.Column(db.PickleType, nullable=True)
+    coins = db.Column(db.PickleType, nullable=True, default=[])
 
 
 def encode_token(user_id):
@@ -48,19 +48,29 @@ def encode_token(user_id):
     return token
 
 
-@app.route('/update', methods=['PUT'])
-def update_user():
+@app.route('/addcoin', methods=['PUT'])
+def add_coin():
     userid = request.form['user']
-    coin = request.form['coin']
+    coin_id = request.form['id']
+    coin_price = request.form['price']
 
     user = User.query.filter_by(id=userid).first()
+
     coins = list(user.coins)
-
-    coins.append(coin)
+    coins.append({"id": coin_id, "price": coin_price})
     user.coins = coins
-
     db.session.commit()
-    return jsonify(message='updated')
+
+    return jsonify(message='coin added')
+
+
+@app.route('/find', methods=['GET'])
+def search():
+    userid = request.form['user']
+
+    user = User.query.filter_by(id=userid).first()
+
+    return jsonify(message=user.coins)
 
 
 @app.route('/register', methods=['POST'])
