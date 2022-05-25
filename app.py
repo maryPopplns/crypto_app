@@ -51,8 +51,14 @@ def encode_token(user_id):
 @app.route('/update', methods=['PUT'])
 def update_user():
     userid = request.form['user']
+    coin = request.form['coin']
+
     user = User.query.filter_by(id=userid).first()
-    user.coins = ['hola3']
+    coins = list(user.coins)
+
+    coins.append(coin)
+    user.coins = coins
+
     db.session.commit()
     return jsonify(message='updated')
 
