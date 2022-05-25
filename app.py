@@ -1,9 +1,11 @@
 import os
 import jwt
+import uuid
 from functools import wraps
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from sqlalchemy.dialects import postgresql
 from flask import Flask, jsonify, request, make_response
 from controllers import headlines_controller, coins_controller
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -29,10 +31,10 @@ db = SQLAlchemy(app)
 # TODO change user model
 class User(db.Model):
     __table_name = 'users'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.String(), primary_key=True, default=uuid.uuid1)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
-    date_registered = db.Column(db.DateTime, default=datetime.utcnow())
+    coins = db.Column(db.PickleType, nullable=True)
 
 
 def encode_token(user_id):
@@ -44,6 +46,15 @@ def encode_token(user_id):
     token = jwt.encode(payload, os.getenv('SECRET_KEY'),
                        algorithm='HS256')
     return token
+
+
+@app.route('/update', methods=['PUT'])
+def update_user():
+    userid = request.form['user']
+    user = User.query.filter_by(id=userid).first()
+    user.coins = ['hola3']
+    db.session.commit()
+    return jsonify(message='updated')
 
 
 @app.route('/register', methods=['POST'])
@@ -58,6 +69,7 @@ def register_user():
 
             hashed_password = generate_password_hash(password)
             user = User(email=email, password=hashed_password)
+
             db.session.add(user)
             db.session.commit()
             resp = {
@@ -133,13 +145,6 @@ def token_required(f):
 
         return f(current_user, *args, **kwargs)
     return decorator
-
-
-@app.route('/protected', methods=['GET'])
-@token_required
-def protected(f):
-    resp = {"message": "you are viewing a protected route"}
-    return make_response(jsonify(resp)), 404
 
 
 @app.route('/headlines', methods=['GET'])
