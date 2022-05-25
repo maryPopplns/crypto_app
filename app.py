@@ -50,18 +50,40 @@ def encode_token(user_id):
 
 @app.route('/addcoin', methods=['PUT'])
 def add_coin():
-    userid = request.form['user']
+    user_id = request.form['user']
     coin_id = request.form['id']
     coin_price = request.form['price']
 
-    user = User.query.filter_by(id=userid).first()
+    user = User.query.filter_by(id=user_id).first()
 
     coins = list(user.coins)
     coins.append({"id": coin_id, "price": coin_price})
     user.coins = coins
     db.session.commit()
 
-    return jsonify(message='coin added')
+    return jsonify(message=coins)
+
+
+@app.route('/removecoin', methods=['PUT'])
+def remove_coin():
+    user_id = request.form['user']
+    coin_id = request.form['id']
+
+    user = User.query.filter_by(id=user_id).first()
+
+    def compare_coins(coin):
+        if coin["id"] == coin_id:
+            return False
+
+        return True
+
+    allcoins = list(user.coins)
+    coins = filter(compare_coins, allcoins)
+    coins_list = list(coins)
+    user.coins = coins_list
+    db.session.commit()
+
+    return jsonify(coins=coins_list)
 
 
 @app.route('/find', methods=['GET'])
