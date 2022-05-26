@@ -95,8 +95,8 @@ def remove_coin():
     return jsonify(coins=coins)
 
 
-@app.route('/find', methods=['GET'])
-def search():
+@app.route('/usercoins', methods=['GET'])
+def usercoins():
     userid = request.form['user']
 
     user = User.query.filter_by(id=userid).first()
