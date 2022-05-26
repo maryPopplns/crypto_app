@@ -57,6 +57,15 @@ def add_coin():
     user = User.query.filter_by(id=user_id).first()
 
     coins = list(user.coins)
+
+    # create list of coin ids
+    def coins_id_extractor(coin):
+        return coin["id"]
+    coin_ids = list(map(coins_id_extractor, coins))
+
+    if coin_id in coin_ids:
+        return jsonify(message='coins has already been added')
+
     coins.append({"id": coin_id, "price": coin_price})
     user.coins = coins
     db.session.commit()
@@ -71,19 +80,19 @@ def remove_coin():
 
     user = User.query.filter_by(id=user_id).first()
 
+    # remove coin from coins
     def compare_coins(coin):
         if coin["id"] == coin_id:
             return False
 
         return True
-
     allcoins = list(user.coins)
-    coins = filter(compare_coins, allcoins)
-    coins_list = list(coins)
-    user.coins = coins_list
+    coins = list(filter(compare_coins, allcoins))
+
+    user.coins = coins
     db.session.commit()
 
-    return jsonify(coins=coins_list)
+    return jsonify(coins=coins)
 
 
 @app.route('/find', methods=['GET'])
