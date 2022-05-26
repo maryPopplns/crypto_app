@@ -28,15 +28,15 @@ db = SQLAlchemy(app)
 
 
 # user model
-# TODO change user model
 class User(db.Model):
     __table_name = 'users'
     id = db.Column(db.String(), primary_key=True, default=uuid.uuid1)
-    email = db.Column(db.String(150), unique=True, nullable=False)
+    username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     coins = db.Column(db.PickleType, nullable=True, default=[])
 
 
+# jwt generator
 def encode_token(user_id):
     payload = {
         'exp': datetime.utcnow() + timedelta(days=1),
@@ -46,6 +46,28 @@ def encode_token(user_id):
     token = jwt.encode(payload, os.getenv('SECRET_KEY'),
                        algorithm='HS256')
     return token
+
+
+# auth middleware
+def token_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        token = None
+        if "Authorization" in request.headers:
+            token = request.headers["Authorization"].split(" ")[1]
+
+        if not token:
+            return jsonify({'message': 'a valid token is missing'})
+        try:
+            data = jwt.decode(
+                token, os.getenv('SECRET_KEY'), algorithms=["HS256"])
+            current_user = User.query.filter_by(
+                id=data['sub']).first()
+        except:
+            return jsonify({'message': 'token is invalid'})
+
+        return f(current_user, *args, **kwargs)
+    return decorator
 
 
 @app.route('/addcoin', methods=['PUT'])
@@ -106,16 +128,16 @@ def usercoins():
 
 @app.route('/register', methods=['POST'])
 def register_user():
-    email = request.form['email']
+    username = request.form['username']
     password = request.form['password']
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(username=username).first()
 
     if not user:
         try:
 
             hashed_password = generate_password_hash(password)
-            user = User(email=email, password=hashed_password)
+            user = User(username=username, password=hashed_password)
 
             db.session.add(user)
             db.session.commit()
@@ -142,12 +164,12 @@ def register_user():
 
 @app.route('/login', methods=['POST'])
 def post():
-    email = request.form['email']
+    username = request.form['username']
     password = request.form['password']
 
     try:
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password) == True:
             auth_token = encode_token(user.id)
@@ -171,27 +193,6 @@ def post():
             "Message": "User login failed"
         }
         return make_response(jsonify(resp)), 404
-
-
-def token_required(f):
-    @wraps(f)
-    def decorator(*args, **kwargs):
-        token = None
-        if "Authorization" in request.headers:
-            token = request.headers["Authorization"].split(" ")[1]
-
-        if not token:
-            return jsonify({'message': 'a valid token is missing'})
-        try:
-            data = jwt.decode(
-                token, os.getenv('SECRET_KEY'), algorithms=["HS256"])
-            current_user = User.query.filter_by(
-                id=data['sub']).first()
-        except:
-            return jsonify({'message': 'token is invalid'})
-
-        return f(current_user, *args, **kwargs)
-    return decorator
 
 
 @app.route('/headlines', methods=['GET'])
