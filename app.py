@@ -71,7 +71,9 @@ def token_required(f):
 
 
 @app.route('/addcoin', methods=['PUT'])
-def add_coin():
+@token_required
+# TODO figure out a way to get the user from the token
+def add_coin(f):
     user_id = request.form['user']
     coin_id = request.form['id']
     coin_price = request.form['price']
@@ -96,7 +98,8 @@ def add_coin():
 
 
 @app.route('/removecoin', methods=['PUT'])
-def remove_coin():
+@token_required
+def remove_coin(f):
     user_id = request.form['user']
     coin_id = request.form['id']
 
@@ -118,7 +121,8 @@ def remove_coin():
 
 
 @app.route('/usercoins', methods=['GET'])
-def usercoins():
+@token_required
+def usercoins(f):
     userid = request.form['user']
 
     user = User.query.filter_by(id=userid).first()
