@@ -70,11 +70,18 @@ def token_required(f):
     return decorator
 
 
+def get_jwt():
+    token = request.headers["Authorization"].split(" ")[1]
+    data = jwt.decode(
+        token, os.getenv('SECRET_KEY'), algorithms=["HS256"])
+    return data["sub"]
+
+
 @app.route('/addcoin', methods=['PUT'])
 @token_required
 # TODO figure out a way to get the user from the token
 def add_coin(f):
-    user_id = request.form['user']
+    user_id = get_jwt()
     coin_id = request.form['id']
     coin_price = request.form['price']
 
@@ -100,7 +107,7 @@ def add_coin(f):
 @app.route('/removecoin', methods=['PUT'])
 @token_required
 def remove_coin(f):
-    user_id = request.form['user']
+    user_id = get_jwt()
     coin_id = request.form['id']
 
     user = User.query.filter_by(id=user_id).first()
@@ -123,7 +130,7 @@ def remove_coin(f):
 @app.route('/usercoins', methods=['GET'])
 @token_required
 def usercoins(f):
-    userid = request.form['user']
+    userid = get_jwt()
 
     user = User.query.filter_by(id=userid).first()
 
