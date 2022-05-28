@@ -4,9 +4,10 @@ Application to view crytpo news and track potential gains/losses.
 
 ## Tech Stack
 
-**API:** Flask, PostgreSQL
+**API:** Flask, PostgreSQL, JWT for auth.
 
 <br>
+
 ## Environment Variables
 
 | Variable     | Description |
@@ -32,3 +33,57 @@ Application to view crytpo news and track potential gains/losses.
 | Variable     | Description    |
 | :----------- | :------------- |
 | `SECRET_KEY` | jwt secret key |
+
+<br>
+
+## API Reference
+
+<br>
+
+#### add coin to user
+
+```http
+  PUT /addcoin
+```
+
+#### remove coin from user
+
+```http
+  PUT /removecoin
+```
+
+#### get user coins
+
+```http
+  GET /usercoins
+```
+
+#### register user
+
+```http
+  POST /register
+```
+
+#### user login
+
+```http
+  POST /login
+```
+
+#### news headlines
+
+```http
+  GET /headlines
+```
+
+#### get top coins
+
+```http
+  GET /topcoins
+```
+
+#### get coin
+
+```http
+  GET /coin
+```
