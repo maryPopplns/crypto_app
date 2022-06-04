@@ -1,11 +1,11 @@
 import os
 import jwt
 import uuid
+from flask_cors import CORS
 from functools import wraps
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-from sqlalchemy.dialects import postgresql
 from flask import Flask, jsonify, request, make_response
 from controllers import headlines_controller, coins_controller
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,6 +15,8 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
+
+CORS(app)
 
 # database config
 uri = os.getenv('DATABASE_URL')
