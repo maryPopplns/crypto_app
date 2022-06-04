@@ -220,7 +220,7 @@ def topcoins():
     return jsonify(response)
 
 
-@app.route('/coin', methods=['GET'])
+@app.route('/coin', methods=['POST'])
 def coin():
     coin = request.form['coin']
     response = coins_controller(f'?list={coin}')
